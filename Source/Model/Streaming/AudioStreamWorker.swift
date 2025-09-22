@@ -1,6 +1,6 @@
 //
 //  AudioStreamWorker.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-01-29.
 //  Copyright © 2019 Tanha Kabir, Jon Mercer
@@ -96,7 +96,7 @@ class AudioStreamWorker: NSObject, AudioDataStreamable {
     self.doneCallback = doneCallback
     super.init()
 
-    let config = URLSessionConfiguration.background(withIdentifier: "SwiftAudioPlayer.stream")
+    let config = URLSessionConfiguration.background(withIdentifier: "Resonance.stream")
     // Specifies that the phone should keep trying till it receives connection instead of dropping immediately
     if #available(iOS 11.0, tvOS 11.0, *) {
       config.waitsForConnectivity = true

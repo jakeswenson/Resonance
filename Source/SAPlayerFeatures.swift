@@ -1,6 +1,6 @@
 //
 //  SAPlayerFeature.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 3/10/21.
 //

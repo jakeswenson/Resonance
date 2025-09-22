@@ -1,5 +1,5 @@
 #
-# Be sure to run `pod lib lint SwiftAudioPlayer.podspec' to ensure this is a
+# Be sure to run `pod lib lint Resonance.podspec' to ensure this is a
 # valid spec before submitting.
 #
 # Any lines starting with a # are optional, but their use is encouraged
@@ -7,9 +7,9 @@
 #
 
 Pod::Spec.new do |s|
-  s.name             = 'SwiftAudioPlayer'
-  s.version          = '7.6.0'
-  s.summary          = 'SwiftAudioPlayer is a Swift based audio player that can handle streaming from a remote location and audio manipulation.'
+  s.name             = 'Resonance'
+  s.version          = '8.0.0'
+  s.summary          = 'Resonance is a modern Swift audio player with reactive programming, streaming, and real-time audio manipulation.'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,14 +18,14 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-SwiftAudioPlayer is a Swift based audio player that can handle streaming from a remote location and audio manipulation. It can perform actions like playing audio up to 32x playback rate on streamed audio.
+Resonance is a modern Swift audio player built with AVAudioEngine and Combine for reactive programming. Features streaming audio, local file playback, real-time audio manipulation (up to 32x speed), pitch control, and custom audio enhancements using functional programming patterns.
                        DESC
 
-  s.homepage         = 'https://github.com/tanhakabir/SwiftAudioPlayer'
+  s.homepage         = 'https://github.com/jakeswenson/Resonance'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'tanhakabir' => 'tanhakabir.ca@gmail.com', 'JonMercer' => 'mercer.jon@gmail.com' }
-  s.source           = { :git => 'https://github.com/tanhakabir/SwiftAudioPlayer.git', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/jakeswenson/Resonance.git', :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/_tanhakabir'
 
   s.platforms = { :ios => '10.0', :tvos => '10.0' }

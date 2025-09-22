@@ -1,6 +1,6 @@
 //
 //  SAPlayingStatus.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-11-24.
 //  Copyright © 2019 Tanha Kabir, Jon Mercer

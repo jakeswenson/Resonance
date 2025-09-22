@@ -1,6 +1,6 @@
 //
 //  AudioThrottler.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-01-29.
 //  Copyright © 2019 Tanha Kabir, Jon Mercer
@@ -38,7 +38,7 @@ protocol AudioThrottleable {
 }
 
 class AudioThrottler: AudioThrottleable {
-  private let queue = DispatchQueue(label: "SwiftAudioPlayer.Throttler", qos: .userInitiated)
+  private let queue = DispatchQueue(label: "Resonance.Throttler", qos: .userInitiated)
 
   //Init
   let url: AudioURL

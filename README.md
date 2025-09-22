@@ -1,8 +1,8 @@
-# SwiftAudioPlayer
+# Resonance
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://github.com/jakeswenson/SwiftAudioPlayer/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://github.com/jakeswenson/Resonance/blob/master/LICENSE)
 [![Swift Package Manager](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
-[![Platform](https://img.shields.io/badge/Platform-iOS%2010%2B%20%7C%20tvOS%2010%2B%20%7C%20macOS%2011%2B-lightgrey.svg)](https://github.com/jakeswenson/SwiftAudioPlayer)
+[![Platform](https://img.shields.io/badge/Platform-iOS%2010%2B%20%7C%20tvOS%2010%2B%20%7C%20macOS%2011%2B-lightgrey.svg)](https://github.com/jakeswenson/Resonance)
 
 Modern Swift audio player built with **AVAudioEngine** and **Combine** for reactive programming. Features streaming audio, local file playback, real-time audio manipulation (3.5X, 4X, 32X speed), pitch control, and custom [audio enhancements](https://developer.apple.com/documentation/avfoundation/audio_track_engineering/audio_engine_building_blocks/audio_enhancements) using functional programming patterns.
 
@@ -14,7 +14,7 @@ Using [AudioToolbox](https://developer.apple.com/documentation/audiotoolbox) for
 
 ## Credits
 
-This project is a modernized fork of the original [SwiftAudioPlayer](https://github.com/tanhakabir/SwiftAudioPlayer) by [Tanha Kabir](https://github.com/tanhakabir) and [Jon Mercer](https://github.com/JonMercer). The original work was built for [Chameleon Podcast](https://chameleonpodcast.com/). This fork focuses on modernizing the codebase with functional programming patterns, Combine framework integration, and Swift Package Manager support.
+This project is a modernized fork of the original [SwiftAudioPlayer](https://github.com/tanhakabir/SwiftAudioPlayer) by [Tanha Kabir](https://github.com/tanhakabir) and [Jon Mercer](https://github.com/JonMercer). The original work was built for [Chameleon Podcast](https://chameleonpodcast.com/). Resonance focuses on modernizing the codebase with functional programming patterns, Combine framework integration, and Swift Package Manager support.
 
 ### Modern Features
 
@@ -54,7 +54,7 @@ These are community supported audio manipulation features using this audio engin
 #### Swift Package Manager
 ```swift
 dependencies: [
-    .package(url: "https://github.com/jakeswenson/SwiftAudioPlayer.git", from: "7.6.0")
+    .package(url: "https://github.com/jakeswenson/Resonance.git", from: "8.0.0")
 ]
 ```
 
@@ -62,7 +62,7 @@ dependencies: [
 
 Import the player at the top:
 ```swift
-import SwiftAudioPlayer
+import Resonance
 ```
 
 **Important:** For app in background downloading please refer to [note](#important-step-for-background-downloads).
@@ -177,7 +177,7 @@ For more details and specifics look at the [API documentation](#api-in-detail) b
 
 ### Issues or questions
 
-Submit any issues, requests, and questions [on the Github repo](https://github.com/jakeswenson/SwiftAudioPlayer/issues).
+Submit any issues, requests, and questions [on the Github repo](https://github.com/jakeswenson/Resonance/issues).
 
 ### Original Project
 
@@ -185,7 +185,7 @@ For reference to the original implementation, see the [original SwiftAudioPlayer
 
 ### License
 
-SwiftAudioPlayer is available under the MIT license. See the LICENSE file for more info.
+Resonance is available under the MIT license. See the LICENSE file for more info.
 
 ---
 

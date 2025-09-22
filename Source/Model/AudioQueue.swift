@@ -1,6 +1,6 @@
 //
 //  AudioQueue.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Joe Williams on 3/10/21.
 //

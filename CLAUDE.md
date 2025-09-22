@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SwiftAudioPlayer is a modern Swift Package Manager library providing advanced audio streaming and playback capabilities. The project has been extensively modernized to use functional programming patterns with Apple's Combine framework, replacing legacy callback-based architecture.
+Resonance is a modern Swift Package Manager library providing advanced audio streaming and playback capabilities. The project has been extensively modernized to use functional programming patterns with Apple's Combine framework, replacing legacy callback-based architecture.
 
 **Supported Platforms**: iOS 10+, tvOS 10+, macOS 11+
 
@@ -21,7 +21,7 @@ swift test -v
 # Build and run example app (requires CocoaPods)
 cd Example
 pod install
-# Then open SwiftAudioPlayer.xcodeproj in Xcode
+# Then open Resonance.xcodeproj in Xcode
 ```
 
 ### Package Management

@@ -1,6 +1,6 @@
 //
 //  AudioConverter.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-01-29.
 //  Copyright © 2019 Tanha Kabir, Jon Mercer
@@ -64,7 +64,7 @@ protocol AudioConvertable {
 /// index that it wants to convert and keeps pulling at that index until the parser
 /// passes up a value.
 class AudioConverter: AudioConvertable {
-  let queue = DispatchQueue(label: "SwiftAudioPlayer.audio_reader_queue")
+  let queue = DispatchQueue(label: "Resonance.audio_reader_queue")
 
   //From Init
   var parser: AudioParsable!

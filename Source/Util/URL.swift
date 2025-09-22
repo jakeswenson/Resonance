@@ -1,6 +1,6 @@
 //
 //  URL.swift
-//  Pods-SwiftAudioPlayer_Example
+//  Pods-Resonance_Example
 //
 //  Created by Tanha Kabir on 2019-01-29.
 //
