@@ -118,6 +118,7 @@ public actor AudioSessionActor {
     /// Activate the audio session
     /// - Parameter options: Activation options
     /// - Throws: AudioError if activation fails
+    #if os(iOS) || os(tvOS) || os(watchOS)
     public func activate(options: AVAudioSession.SetActiveOptions = .notifyOthersOnDeactivation) throws {
         let session = AVAudioSession.sharedInstance()
 
@@ -132,10 +133,19 @@ public actor AudioSessionActor {
             throw audioError
         }
     }
+    #else
+    public func activate() throws {
+        // macOS doesn't use AVAudioSession
+        isActivated = true
+        activationSubject.send(true)
+        sessionStateSubject.send(.activated)
+    }
+    #endif
 
     /// Deactivate the audio session
     /// - Parameter options: Deactivation options
     /// - Throws: AudioError if deactivation fails
+    #if os(iOS) || os(tvOS) || os(watchOS)
     public func deactivate(options: AVAudioSession.SetActiveOptions = .notifyOthersOnDeactivation) throws {
         let session = AVAudioSession.sharedInstance()
 
@@ -150,6 +160,14 @@ public actor AudioSessionActor {
             throw audioError
         }
     }
+    #else
+    public func deactivate() throws {
+        // macOS doesn't use AVAudioSession
+        isActivated = false
+        activationSubject.send(false)
+        sessionStateSubject.send(.deactivated)
+    }
+    #endif
 
     /// Set the current active session
     /// - Parameter session: The audio session to manage
@@ -437,8 +455,8 @@ public enum AudioInterruption: Sendable {
     case began
     case ended(shouldResume: Bool)
     #if os(iOS) || os(tvOS) || os(watchOS)
-    case deviceDisconnected(AVAudioSession.Port.Type)
-    case deviceConnected(AVAudioSession.Port.Type)
+    case deviceDisconnected(AVAudioSession.Port)
+    case deviceConnected(AVAudioSession.Port)
     #endif
 }
 
@@ -504,5 +522,5 @@ extension AVAudioSession.Category: @retroactive Sendable {}
 extension AVAudioSession.Mode: @retroactive Sendable {}
 extension AVAudioSession.CategoryOptions: @retroactive Sendable {}
 extension AVAudioSession.RouteChangeReason: @retroactive Sendable {}
-extension AVAudioSession.Port.Type: @retroactive Sendable {}
+extension AVAudioSession.Port: @retroactive Sendable {}
 #endif

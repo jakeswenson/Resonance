@@ -473,7 +473,7 @@ public final class ReactiveAudioCoordinator: @unchecked Sendable {
 
         // Synchronize download state
         let downloads = await downloadActor.getAllDownloads()
-        audioUpdates.completedDownloads.send(downloads)
+        audioUpdates.updateCompletedDownloads(downloads)
 
         // Update performance metrics
         await updatePerformanceMetrics()
@@ -486,7 +486,7 @@ public final class ReactiveAudioCoordinator: @unchecked Sendable {
     ///   - context: Additional context about the error
     public func handleCoordinationError(_ error: AudioError, from subsystem: AudioSubsystem, context: String? = nil) {
         let systemError = AudioSystemError(error: error, subsystem: subsystem, context: context)
-        audioUpdates.errorEvents.send(systemError)
+        audioUpdates.updateErrorEvent(systemError)
 
         Log.error("ReactiveAudioCoordinator: Error from \(subsystem): \(error.localizedDescription)")
 
@@ -502,11 +502,12 @@ public final class ReactiveAudioCoordinator: @unchecked Sendable {
     /// - Returns: Current status of all subsystems
     public func getSystemStatus() async -> CoordinatorSystemStatus {
         let sessionActive = await sessionActor.isSessionActive()
-        let sessionConfig = await sessionActor.getSessionConfiguration()
         let downloadCount = await downloadActor.getAllDownloads().count
         let effectCount = await effectsActor.effectCount()
         let enabledEffectCount = await effectsActor.enabledEffectCount()
 
+        #if os(iOS) || os(tvOS)
+        let sessionConfig = await sessionActor.getSessionConfiguration()
         return CoordinatorSystemStatus(
             coordinatorState: state,
             audioEngineRunning: audioEngine.isRunning,
@@ -520,6 +521,19 @@ public final class ReactiveAudioCoordinator: @unchecked Sendable {
             performanceMetrics: await performanceTracker.getCurrentMetrics(),
             memoryUsage: await memoryMonitor.getCurrentUsage()
         )
+        #else
+        return CoordinatorSystemStatus(
+            coordinatorState: state,
+            audioEngineRunning: audioEngine.isRunning,
+            sessionActive: sessionActive,
+            activeSession: currentAudioSession,
+            downloadCount: downloadCount,
+            effectCount: effectCount,
+            enabledEffectCount: enabledEffectCount,
+            performanceMetrics: await performanceTracker.getCurrentMetrics(),
+            memoryUsage: await memoryMonitor.getCurrentUsage()
+        )
+        #endif
     }
 
     // MARK: - Publisher Access
@@ -582,40 +596,40 @@ public final class ReactiveAudioCoordinator: @unchecked Sendable {
         // Bind session state changes
         sessionActor.sessionStatePublisher
             .sink { [weak self] state in
-                self?.audioUpdates.sessionState.send(state)
+                self?.audioUpdates.updateSessionState(state)
             }
             .store(in: &actorCancellables)
 
         // Bind interruption events
         sessionActor.interruptionPublisher
             .sink { [weak self] interruption in
-                self?.audioUpdates.interruptions.send(interruption)
+                self?.audioUpdates.updateInterruption(interruption)
             }
             .store(in: &actorCancellables)
 
         // Bind route changes
         sessionActor.routeChangePublisher
             .sink { [weak self] routeChange in
-                self?.audioUpdates.routeChanges.send(routeChange)
+                self?.audioUpdates.updateRouteChange(routeChange)
             }
             .store(in: &actorCancellables)
 
         // Bind session activation
         sessionActor.activationPublisher
             .sink { [weak self] isActive in
-                self?.audioUpdates.sessionActivation.send(isActive)
+                self?.audioUpdates.updateSessionActivation(isActive)
             }
             .store(in: &actorCancellables)
 
         // Bind download progress
         downloadActor.downloadProgress
             .sink { [weak self] progressMap in
-                self?.audioUpdates.downloadProgress.send(progressMap)
+                self?.audioUpdates.updateDownloadProgress(progressMap)
 
                 // Update legacy progress tracking
                 if let firstProgress = progressMap.values.first(where: { $0.state.isActive }) {
-                    self?.audioUpdates.audioDownloading.send(firstProgress.progress)
-                    self?.audioUpdates.streamingDownloadProgress.send((firstProgress.remoteURL, firstProgress.progress))
+                    self?.audioUpdates.updateAudioDownloading(firstProgress.progress)
+                    self?.audioUpdates.updateStreamingDownloadProgress((firstProgress.remoteURL, firstProgress.progress))
                 }
             }
             .store(in: &actorCancellables)
@@ -623,7 +637,7 @@ public final class ReactiveAudioCoordinator: @unchecked Sendable {
         // Bind effects updates
         effectsActor.currentEffects
             .sink { [weak self] effects in
-                self?.audioUpdates.activeEffects.send(effects)
+                self?.audioUpdates.updateActiveEffects(effects)
             }
             .store(in: &actorCancellables)
 
@@ -706,13 +720,13 @@ public final class ReactiveAudioCoordinator: @unchecked Sendable {
     /// Update performance metrics
     private func updatePerformanceMetrics() async {
         let metrics = await performanceTracker.getCurrentMetrics()
-        audioUpdates.performanceMetrics.send(metrics)
+        audioUpdates.updatePerformanceMetrics(metrics)
     }
 
     /// Update memory usage metrics
     private func updateMemoryMetrics() async {
         let usage = await memoryMonitor.getCurrentUsage()
-        audioUpdates.memoryUsage.send(usage)
+        audioUpdates.updateMemoryUsage(usage)
     }
 
     /// Determine if an error is critical and requires special handling
@@ -945,20 +959,20 @@ extension ReactiveAudioCoordinator {
     /// Update legacy playback status (for backward compatibility)
     /// - Parameter status: Legacy playback status
     public func updateLegacyPlaybackStatus(_ status: SAPlayingStatus) {
-        audioUpdates.playingStatus.send(status)
+        audioUpdates.updatePlayingStatus(status)
     }
 
     /// Update legacy elapsed time (for backward compatibility)
     /// - Parameter time: Elapsed time in seconds
     public func updateLegacyElapsedTime(_ time: TimeInterval) {
-        audioUpdates.elapsedTime.send(time)
-        audioUpdates.precisePosition.send(time)
+        audioUpdates.updateElapsedTime(time)
+        audioUpdates.updatePrecisePosition(time)
     }
 
     /// Update legacy duration (for backward compatibility)
     /// - Parameter duration: Total duration in seconds
     public func updateLegacyDuration(_ duration: TimeInterval) {
-        audioUpdates.duration.send(duration)
+        audioUpdates.updateDuration(duration)
     }
 }
 
