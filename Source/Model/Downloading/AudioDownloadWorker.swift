@@ -1,6 +1,6 @@
 //
 //  AudioDownloadWorker.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-01-29.
 //  Copyright © 2019 Tanha Kabir, Jon Mercer
@@ -51,7 +51,7 @@ enum DownloadWorkerError: Error {
   case duplicate
 }
 
-class AudioDownloadWorker: NSObject, AudioDataDownloadable {
+class AudioDownloadWorker: NSObject, AudioDataDownloadable, @unchecked Sendable {
   private let MAX_CONCURRENT_DOWNLOADS = 3
 
   // Given by the AppDelegate
@@ -63,7 +63,7 @@ class AudioDownloadWorker: NSObject, AudioDataDownloadable {
   private let allowsCellularDownload: Bool
   private lazy var session: URLSession = {
     let config = URLSessionConfiguration.background(
-      withIdentifier: "SwiftAudioPlayer.background_downloader_\(Date.getUTC())")
+      withIdentifier: "Resonance.background_downloader_\(Date.getUTC())")
     config.isDiscretionary = !allowsCellularDownload
     config.sessionSendsLaunchEvents = true
     config.allowsCellularAccess = allowsCellularDownload

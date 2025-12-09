@@ -7,7 +7,7 @@
 //
 
 import AVFoundation
-import SwiftAudioPlayer
+import Resonance
 import UIKit
 
 class ViewController: UIViewController {

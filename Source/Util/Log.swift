@@ -1,6 +1,6 @@
 //
 //  Log.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-01-29.
 //  Copyrights to ColorLog
@@ -27,7 +27,7 @@ class Log {
   private init() {}
 
   // Used for OSLog
-  private static let SUBSYSTEM: String = "com.SwiftAudioPlayer"
+  private static let SUBSYSTEM: String = "com.Resonance"
 
   /**
      Used for when you're doing tests. Testing log should be removed before commiting

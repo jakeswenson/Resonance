@@ -1,6 +1,6 @@
 //
 //  SAPlayer.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-01-29.
 //  Copyright © 2019 Tanha Kabir, Jon Mercer
@@ -42,7 +42,7 @@ public class SAPlayer {
   /**
      Access to the player.
      */
-  public static let shared: SAPlayer = SAPlayer()
+  @MainActor public static let shared: SAPlayer = SAPlayer()
 
   private var presenter: SAPlayerPresenter
   private var player: AudioEngine?

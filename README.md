@@ -1,26 +1,32 @@
-# SwiftAudioPlayer
+# Resonance
 
-[![Version](https://img.shields.io/cocoapods/v/SwiftAudioPlayer.svg?style=flat)](https://cocoapods.org/pods/SwiftAudioPlayer)
-[![License](https://img.shields.io/cocoapods/l/SwiftAudioPlayer.svg?style=flat)](https://cocoapods.org/pods/SwiftAudioPlayer)
-[![Platform](https://img.shields.io/cocoapods/p/SwiftAudioPlayer.svg?style=flat)](https://cocoapods.org/pods/SwiftAudioPlayer)
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://github.com/jakeswenson/Resonance/blob/master/LICENSE)
+[![Swift Package Manager](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
+[![Platform](https://img.shields.io/badge/Platform-iOS%2010%2B%20%7C%20tvOS%2010%2B%20%7C%20macOS%2011%2B-lightgrey.svg)](https://github.com/jakeswenson/Resonance)
 
-Swift-based audio player with AVAudioEngine as its base. Allows for: streaming online audio, playing local file, changing audio speed (3.5X, 4X, 32X), pitch, and real-time audio manipulation using custom [audio enhancements](https://developer.apple.com/documentation/avfoundation/audio_track_engineering/audio_engine_building_blocks/audio_enhancements).
+Modern Swift audio player built with **AVAudioEngine** and **Combine** for reactive programming. Features streaming audio, local file playback, real-time audio manipulation (3.5X, 4X, 32X speed), pitch control, and custom [audio enhancements](https://developer.apple.com/documentation/avfoundation/audio_track_engineering/audio_engine_building_blocks/audio_enhancements) using functional programming patterns.
 
-This player was built for [podcasting](https://chameleonpodcast.com/). We originally used AVPlayer for playing audio but we wanted to manipulate audio that was being streamed. We set up AVAudioEngine at first just to play a file saved on the phone and it worked great, but AVAudioEngine on its own doesn't support streaming audio as easily as AVPlayer.
+**Platforms**: iOS 10+, tvOS 10+, macOS 11+
 
-Thus, using [AudioToolbox](https://developer.apple.com/documentation/audiotoolbox), we are able to stream audio and convert the downloaded data into usable data for the AVAudioEngine to play. For an overview of our solution check out our [blog post](https://medium.com/chameleon-podcast/creating-an-advanced-streaming-audio-engine-for-ios-9fbc7aef4115).
+This player was built for [podcasting](https://chameleonpodcast.com/) using modern reactive programming with Apple's Combine framework. The architecture has been modernized from callback-based patterns to declarative, functional programming using Publishers and Subscribers for type-safe, reactive audio event handling.
 
-### Basic Features
+Using [AudioToolbox](https://developer.apple.com/documentation/audiotoolbox) for streaming data conversion and AVAudioEngine for playback, combined with Combine for reactive data flow. For technical details see the original [blog post](https://medium.com/chameleon-podcast/creating-an-advanced-streaming-audio-engine-for-ios-9fbc7aef4115).
 
-1. Realtime audio manipulation that includes going up to 10x speed, using [equalizers and other manipulations](https://developer.apple.com/documentation/avfaudio/avaudiouniteq)
-1. Stream online audio using AVAudioEngine
-1. Stream radio
-1. Play locally saved audio with the same API
-1. Download audio
-1. Queue up downloaded and streamed audio for autoplay
-1. Uses only 1-2% CPU for optimal performance for the rest of your app
-1. You're able to install taps and any other AVAudioEngine features to do cool things like skipping silences
+## Credits
+
+This project is a modernized fork of the original [SwiftAudioPlayer](https://github.com/tanhakabir/SwiftAudioPlayer) by [Tanha Kabir](https://github.com/tanhakabir) and [Jon Mercer](https://github.com/JonMercer). The original work was built for [Chameleon Podcast](https://chameleonpodcast.com/). Resonance focuses on modernizing the codebase with functional programming patterns, Combine framework integration, and Swift Package Manager support.
+
+### Modern Features
+
+1. **Reactive Programming**: Built with Combine framework for declarative, type-safe audio event handling
+1. **Real-time Audio Effects**: Up to 10x speed manipulation using [AVAudioUnit effects](https://developer.apple.com/documentation/avfaudio/avaudiouniteq)
+1. **Streaming & Local Playback**: Unified API for both remote streaming and local file playback using AVAudioEngine
+1. **Cross-Platform**: iOS, tvOS, and macOS support with conditional compilation
+1. **Background Downloads**: Automatic download management with reactive progress tracking
+1. **Audio Queue**: Reactive autoplay queue for downloaded and streamed audio
+1. **Performance Optimized**: Uses only 1-2% CPU with lock-free atomic operations
+1. **Extensible**: Install AVAudioEngine taps and custom audio processing nodes
+1. **Thread-Safe**: Swift Atomics for high-performance concurrent operations
 
 ### Special Features
 These are community supported audio manipulation features using this audio engine. You can implement your own version of these features and you can look at [SAPlayerFeatures](https://github.com/tanhakabir/SwiftAudioPlayer/blob/master/Source/SAPlayerFeatures.swift) to learn how they were implemented using the library.
@@ -30,7 +36,9 @@ These are community supported audio manipulation features using this audio engin
 
 ### Requirements
 
-iOS 10.0 and higher.
+- **iOS 10.0+**, **tvOS 10.0+**, **macOS 11.0+**
+- **Swift 5.5+**
+- **Xcode 13.0+**
 
 ## Getting Started
 
@@ -43,18 +51,18 @@ iOS 10.0 and higher.
 
 ### Installation
 
-SwiftAudioPlayer is available through [CocoaPods](https://cocoapods.org). To install
-it, simply add the following line to your Podfile:
-
-```ruby
-pod 'SwiftAudioPlayer'
+#### Swift Package Manager
+```swift
+dependencies: [
+    .package(url: "https://github.com/jakeswenson/Resonance.git", from: "8.0.0")
+]
 ```
 
 ### Usage
 
 Import the player at the top:
 ```swift
-import SwiftAudioPlayer
+import Resonance
 ```
 
 **Important:** For app in background downloading please refer to [note](#important-step-for-background-downloads).
@@ -72,23 +80,26 @@ let info = SALockScreenInfo(title: "Random audio", artist: "Foo", artwork: UIIma
 SAPlayer.shared.mediaInfo = info
 ```
 
-To receive streaming progress (for buffer progress %):
+To receive streaming progress using modern Combine (reactive approach):
 ```swift
+import Combine
+
 @IBOutlet weak var bufferProgress: UIProgressView!
+private var cancellables = Set<AnyCancellable>()
 
 override func viewDidLoad() {
     super.viewDidLoad()
 
-    _ = SAPlayer.Updates.StreamingBuffer.subscribe{ [weak self] buffer in
-        guard let self = self else { return }
-
-        self.bufferProgress.progress = Float(buffer.bufferingProgress)
-
-        self.isPlayable = buffer.isReadyForPlaying
-    }
+    // Reactive streaming buffer updates
+    SAPlayer.shared.updates.streamingBuffer
+        .compactMap { $0 }
+        .sink { [weak self] buffer in
+            self?.bufferProgress.progress = Float(buffer.bufferingProgress)
+            self?.isPlayable = buffer.isReadyForPlaying
+        }
+        .store(in: &cancellables)
 }
 ```
-Look at the [Updates](#saplayerupdates) section to see usage details and other updates to follow.
 
 
 For realtime audio manipulations, [AVAudioUnit](https://developer.apple.com/documentation/avfoundation/avaudiounit) nodes are used. For example to adjust the reverb through a slider in the UI:
@@ -111,6 +122,54 @@ override func viewDidLoad() {
 ```
 For a more detailed explanation on usage, look at the [Realtime Audio Manipulations](#realtime-audio-manipulation) section.
 
+### Modern Reactive Examples
+
+#### Multiple Reactive Subscriptions
+```swift
+import Combine
+
+class AudioViewController: UIViewController {
+    private var cancellables = Set<AnyCancellable>()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupReactiveSubscriptions()
+    }
+
+    private func setupReactiveSubscriptions() {
+        // Playing status updates
+        SAPlayer.shared.updates.playingStatus
+            .sink { [weak self] status in
+                self?.updatePlayButton(for: status)
+            }
+            .store(in: &cancellables)
+
+        // Elapsed time updates
+        SAPlayer.shared.updates.elapsedTime
+            .filter { $0 >= 0 }
+            .sink { [weak self] time in
+                self?.updateTimeLabel(time)
+            }
+            .store(in: &cancellables)
+
+        // Duration updates
+        SAPlayer.shared.updates.duration
+            .filter { $0 > 0 }
+            .sink { [weak self] duration in
+                self?.setupProgressSlider(maxValue: duration)
+            }
+            .store(in: &cancellables)
+
+        // Download progress
+        SAPlayer.shared.updates.audioDownloading
+            .sink { [weak self] progress in
+                self?.updateDownloadProgress(progress)
+            }
+            .store(in: &cancellables)
+    }
+}
+```
+
 For more details and specifics look at the [API documentation](#api-in-detail) below.
 
 
@@ -118,11 +177,15 @@ For more details and specifics look at the [API documentation](#api-in-detail) b
 
 ### Issues or questions
 
-Submit any issues, requests, and questions [on the Github repo](https://github.com/tanhakabir/SwiftAudioPlayer/issues).
+Submit any issues, requests, and questions [on the Github repo](https://github.com/jakeswenson/Resonance/issues).
+
+### Original Project
+
+For reference to the original implementation, see the [original SwiftAudioPlayer repository](https://github.com/tanhakabir/SwiftAudioPlayer).
 
 ### License
 
-SwiftAudioPlayer is available under the MIT license. See the LICENSE file for more info.
+Resonance is available under the MIT license. See the LICENSE file for more info.
 
 ---
 
@@ -251,63 +314,61 @@ func deleteDownloaded(withSavedUrl url: URL)
 
 **NOTE:** You're in charge or clearing downloads when your don't need them anymore
 
-## SAPlayer.Updates
+## Modern Reactive Updates with Combine
 
-Receive updates for changing values from the player, such as the duration, elapsed time of playing audio, download progress, and etc.
+The player provides reactive updates through Combine Publishers. Access them via `SAPlayer.shared.updates`:
 
-All subscription functions for updates take the form of:
+### Available Publishers
+
+All publishers are `CurrentValueSubject` types that emit updates automatically:
+
 ```swift
-func subscribe(_ closure: @escaping (_ payload:  <Payload>) -> ()) -> UInt
+// Playing status changes
+SAPlayer.shared.updates.playingStatus: CurrentValueSubject<SAPlayingStatus, Never>
+
+// Elapsed time updates
+SAPlayer.shared.updates.elapsedTime: CurrentValueSubject<TimeInterval, Never>
+
+// Duration changes (especially for streaming audio)
+SAPlayer.shared.updates.duration: CurrentValueSubject<TimeInterval, Never>
+
+// Streaming buffer progress
+SAPlayer.shared.updates.streamingBuffer: CurrentValueSubject<SAAudioAvailabilityRange?, Never>
+
+// Download progress
+SAPlayer.shared.updates.audioDownloading: CurrentValueSubject<Double, Never>
+
+// Streaming download progress with URL
+SAPlayer.shared.updates.streamingDownloadProgress: CurrentValueSubject<(url: URL, progress: Double)?, Never>
+
+// Next audio in queue
+SAPlayer.shared.updates.audioQueue: CurrentValueSubject<URL?, Never>
 ```
 
-- `closure`: The closure that will receive the updates. It's recommended to have a weak reference to a class that uses these functions.
-- `payload`: The updated value.
-- Returns: the id for the subscription in the case you would like to unsubscribe to updates for the closure.
+### Subscription Pattern
 
-Sometimes there is:
-- `url`: The corresponding remote URL for the update. In the case there might be multiple files observed, such as downloading many files at once.
+Use standard Combine patterns for subscription management:
 
-Similarily unsubscribe takes the form of:
 ```swift
-func unsubscribe(_ id: UInt)
+private var cancellables = Set<AnyCancellable>()
+
+// Automatic memory management - no manual unsubscribe needed
+SAPlayer.shared.updates.playingStatus
+    .sink { status in
+        // Handle status changes
+    }
+    .store(in: &cancellables)
 ```
 
-- `id`: The closure with this id will stop receiving updates.
 
+### Publisher Details
 
-### ElapsedTime
-Payload = `Double`
-
-Changes in the timestamp/elapsed time of the current initialized audio. Aka, where the scrubber's pointer of the audio should be at.
-
-Subscribe to this to update views on changes in position of which part of audio is being played.
-
-### Duration
-Payload = `Double`
-
-Changes in the duration of the current initialized audio. Especially helpful for audio that is being streamed and can change with more data. The engine makes a best effort guess as to the duration of the audio. The guess gets better with more bytes streamed from the web.
-
-### PlayingStatus
-Payload = `SAPlayingStatus`
-
-Changes in the playing status of the player. Can be one of the following 4: `playing`, `paused`, `buffering`, `ended` (audio ended).
-
-### StreamingBuffer
-Payload = `SAAudioAvailabilityRange`
-
-Changes in the progress of downloading audio for streaming. Information about range of audio available and if the audio is playable. Look at SAAudioAvailabilityRange for more information.
-
-For progress of downloading audio that saves to the phone for playback later, look at AudioDownloading instead.
-
-### AudioDownloading
-Payload = `Double`
-
-Changes in the progress of downloading audio in the background. This does not correspond to progress in streaming downloads, look at StreamingBuffer for streaming progress.
-
-### AudioQueue
-Payload = `URL`
-
-Notification of the URL of the upcoming audio to be played. This URL may be remote or locally saved.
+- **ElapsedTime**: `TimeInterval` - Current playback position (scrubber position)
+- **Duration**: `TimeInterval` - Total audio duration (updates as streaming progresses)
+- **PlayingStatus**: `SAPlayingStatus` - Current state: `.playing`, `.paused`, `.buffering`, `.ended`
+- **StreamingBuffer**: `SAAudioAvailabilityRange?` - Streaming progress and playability info
+- **AudioDownloading**: `Double` - Background download progress (0.0 to 1.0)
+- **AudioQueue**: `URL?` - Next audio URL in the autoplay queue
 
 ## Audio Effects
 

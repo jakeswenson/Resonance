@@ -1,11 +1,11 @@
 use_frameworks!
 
-target 'SwiftAudioPlayer_Example' do
+target 'Resonance_Example' do
   platform :ios, '10.0'  
 
-  pod 'SwiftAudioPlayer', :path => '../'
+  pod 'Resonance', :path => '../'
 
-  target 'SwiftAudioPlayer_Tests' do
+  target 'Resonance_Tests' do
     inherit! :search_paths    
   end
 end

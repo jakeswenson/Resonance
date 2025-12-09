@@ -1,6 +1,6 @@
 //
 //  SAPlayerPresenter.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-01-29.
 //  Copyright © 2019 Tanha Kabir, Jon Mercer
@@ -233,7 +233,7 @@ extension SAPlayerPresenter {
     let nextAudioURL = audioQueue.removeFirst()
 
     Log.info("getting ready to play \(nextAudioURL)")
-    updates.audioQueue.send(nextAudioURL.url)
+    updates.updateAudioQueue(nextAudioURL.url)
 
     handleClear()
 

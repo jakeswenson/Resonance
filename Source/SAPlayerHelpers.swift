@@ -1,6 +1,6 @@
 //
 //  SALockScreenInfo.swift
-//  SwiftAudioPlayer
+//  Resonance
 //
 //  Created by Tanha Kabir on 2019-02-18.
 //  Copyright © 2019 Tanha Kabir, Jon Mercer

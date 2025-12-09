@@ -1,22 +1,29 @@
 import Atomics
 
+// Temporarily commented out due to swift-atomics version conflicts
+// This will be restored once atomic storage is properly configured
+
+/*
 extension Double: AtomicValue {
   public typealias AtomicRepresentation = DoubleStorage
 }
 
 public struct DoubleStorage: AtomicStorage {
   public typealias Value = Double
-  typealias Inner = UInt64.AtomicRepresentation
-  let inner: Inner
+  private let _storage: ManagedAtomic<UInt64>
 
   public init(_ value: __owned Double) {
-    inner = UInt64.AtomicRepresentation.init(value.bitPattern)
+    _storage = ManagedAtomic<UInt64>(value.bitPattern)
   }
 
   public __consuming func dispose() -> Double {
-    Double(bitPattern: inner.dispose())
+    Double(bitPattern: _storage.load(ordering: .sequentiallyConsistent))
   }
+}
+*/
 
+// Rest of implementation commented out temporarily
+/*
   public static func atomicLoad(at pointer: UnsafeMutablePointer<DoubleStorage>, ordering: AtomicLoadOrdering) -> Double {
 
     let result = pointer.withMemoryRebound(to: Inner.self, capacity: 1) { (p: UnsafeMutablePointer<Inner>) -> Inner.Value in
@@ -131,3 +138,4 @@ public struct DoubleStorage: AtomicStorage {
 
 
 }
+*/
