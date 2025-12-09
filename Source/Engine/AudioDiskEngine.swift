@@ -25,7 +25,15 @@
 
 import AVFoundation
 import Foundation
+import Combine
 
+/// Audio engine for disk-based playback - adapted for protocol-based architecture integration
+///
+/// Optimized for local audio file playback with immediate access to file information.
+/// Provides efficient seeking and duration calculation for local content.
+///
+/// PROTOCOL INTEGRATION. Works with ReactiveAudioCoordinator for coordinated
+/// access to actors and provides state updates through AudioUpdates
 class AudioDiskEngine: AudioEngine {
   var audioFormat: AVAudioFormat?
   var audioSampleRate: Float = 0
@@ -34,6 +42,10 @@ class AudioDiskEngine: AudioEngine {
   var currentPosition: AVAudioFramePosition = 0
 
   var audioFile: AVAudioFile?
+
+  // Protocol integration
+  private weak var coordinator: ReactiveAudioCoordinator?
+  private var audioMetadata: AudioMetadata?
 
   var currentFrame: AVAudioFramePosition {
     guard let lastRenderTime = playerNode.lastRenderTime,
@@ -47,7 +59,7 @@ class AudioDiskEngine: AudioEngine {
 
   var audioLengthSeconds: Float = 0
 
-  init(withSavedUrl url: AudioURL, delegate: AudioEngineDelegate?, updates: AudioUpdates) {
+  init(withSavedUrl url: AudioURL, delegate: AudioEngineDelegate?, updates: AudioUpdates, coordinator: ReactiveAudioCoordinator? = nil, metadata: AudioMetadata? = nil) {
     Log.info(url.key)
 
     do {
@@ -60,6 +72,10 @@ class AudioDiskEngine: AudioEngine {
       url: url, delegate: delegate,
       engineAudioFormat: audioFile?.processingFormat ?? AudioEngine.defaultEngineAudioFormat,
       updates: updates)
+
+    // Store protocol integration dependencies
+    self.coordinator = coordinator
+    self.audioMetadata = metadata
 
     if let file = audioFile {
       Log.debug("Audio file exists")
@@ -147,5 +163,57 @@ class AudioDiskEngine: AudioEngine {
   override func invalidate() {
     super.invalidate()
     //Nothing to invalidate for disk
+  }
+}
+
+// MARK: - Protocol Integration
+
+extension AudioDiskEngine {
+
+  /// Creates a disk engine configured for protocol integration
+  /// - Parameters:
+  ///   - url: Local URL to play
+  ///   - coordinator: ReactiveAudioCoordinator for actor access
+  ///   - metadata: Audio metadata for protocol compliance
+  ///   - delegate: Engine delegate for callbacks
+  /// - Returns: Configured AudioDiskEngine instance
+  static func createForProtocolIntegration(
+    withSavedUrl url: AudioURL,
+    coordinator: ReactiveAudioCoordinator?,
+    metadata: AudioMetadata?,
+    delegate: AudioEngineDelegate? = nil
+  ) -> AudioDiskEngine {
+    return AudioDiskEngine(
+      withSavedUrl: url,
+      delegate: delegate,
+      updates: coordinator?.getLegacyAudioUpdates() ?? AudioUpdates(),
+      coordinator: coordinator,
+      metadata: metadata
+    )
+  }
+
+  /// Gets the current audio metadata
+  func getCurrentMetadata() -> AudioMetadata? {
+    return audioMetadata
+  }
+
+  /// Updates the audio metadata
+  func updateMetadata(_ metadata: AudioMetadata?) {
+    self.audioMetadata = metadata
+  }
+
+  /// Gets the coordinator reference for actor access
+  func getCoordinator() -> ReactiveAudioCoordinator? {
+    return coordinator
+  }
+
+  /// Gets file information for protocol compliance
+  func getFileInfo() -> (duration: TimeInterval, sampleRate: Float, length: AVAudioFramePosition)? {
+    guard let audioFile = audioFile else { return nil }
+    return (
+      duration: TimeInterval(audioLengthSeconds),
+      sampleRate: audioSampleRate,
+      length: audioLengthSamples
+    )
   }
 }

@@ -233,7 +233,7 @@ extension SAPlayerPresenter {
     let nextAudioURL = audioQueue.removeFirst()
 
     Log.info("getting ready to play \(nextAudioURL)")
-    updates.audioQueue.send(nextAudioURL.url)
+    updates.updateAudioQueue(nextAudioURL.url)
 
     handleClear()
 

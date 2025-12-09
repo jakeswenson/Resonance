@@ -113,7 +113,7 @@ class AudioParser: AudioParsable {
 
   //Our use
   var expectedFileSizeInBytes: ManagedAtomic<UInt64> = ManagedAtomic(0)
-  var networkProgress: ManagedAtomic<Double> = ManagedAtomic(0)
+  var networkProgress: ManagedAtomic<UInt64> = ManagedAtomic(0) // Stores progress * 10000 for precision
   var parsedFileAudioFormatCallback: (AVAudioFormat) -> Void
   var indexSeekOffset: ManagedAtomic<AVAudioPacketCount> = ManagedAtomic(0)
   var shouldPreventPacketFromFillingUp = false
@@ -135,7 +135,7 @@ class AudioParser: AudioParsable {
 
     let predictedCount = AVAudioPacketCount(Double(sizeOfFileInBytes) / bytesPerPacket)
 
-    guard networkProgress.load(ordering: .sequentiallyConsistent) != 1.0 else {
+    guard networkProgress.load(ordering: .sequentiallyConsistent) != 10000 else { // 1.0 * 10000
       return max(AVAudioPacketCount(audioPackets.count), predictedCount)
     }
 
@@ -205,7 +205,7 @@ class AudioParser: AudioParsable {
 
     streamingProgressCancellable = updates.streamingDownloadProgress.sink { [weak self] progress in
       guard let self = self else { return }
-      self.networkProgress.store(progress?.progress ?? 0, ordering: .sequentiallyConsistent)
+      self.networkProgress.store(UInt64((progress?.progress ?? 0) * 10000), ordering: .sequentiallyConsistent)
 
       // initially parse a bunch of packets
       self.lockQueue.sync {

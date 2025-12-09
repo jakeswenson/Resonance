@@ -24,8 +24,10 @@
 //  THE SOFTWARE.
 
 import Foundation
+import Combine
+import Atomics
 
-protocol AudioDataManagable {
+protocol AudioDataManagable: Sendable {
   var numberOfQueued: Int { get }
   var numberOfActive: Int { get }
 
@@ -54,11 +56,29 @@ protocol AudioDataManagable {
   func deleteDownload(withLocalURL url: URL)
 }
 
-class AudioDataManager: AudioDataManagable {
-  var allowCellular: Bool = true
-  var downloadDirectory: FileManager.SearchPathDirectory = .downloadsDirectory
+/// Enhanced AudioDataManager with actor system integration
+///
+/// Maintains backward compatibility while integrating with ReactiveAudioCoordinator
+/// for coordinated access to DownloadManagerActor and other system actors.
+class AudioDataManager: AudioDataManagable, @unchecked Sendable {
+  private let _allowCellular = ManagedAtomic<Bool>(true)
+  private let _downloadDirectory = ManagedAtomic<UInt8>(UInt8(FileManager.SearchPathDirectory.downloadsDirectory.rawValue))
 
-  static let shared: AudioDataManagable = AudioDataManager()
+  var allowCellular: Bool {
+    get { _allowCellular.load(ordering: .acquiring) }
+    set { _allowCellular.store(newValue, ordering: .releasing) }
+  }
+
+  var downloadDirectory: FileManager.SearchPathDirectory {
+    get { FileManager.SearchPathDirectory(rawValue: Int(_downloadDirectory.load(ordering: .acquiring))) ?? .downloadsDirectory }
+    set { _downloadDirectory.store(UInt8(UInt(newValue.rawValue)), ordering: .releasing) }
+  }
+
+  @MainActor static let shared: AudioDataManagable = AudioDataManager()
+
+  // Actor system integration
+  private weak var coordinator: ReactiveAudioCoordinator?
+  private var cancellables = Set<AnyCancellable>()
 
   // When we're streaming we want to stagger the size of data push up from disk to prevent the phone from freezing. We push up data of this chunk size every couple milliseconds.
   private let MAXIMUM_DATA_SIZE_TO_PUSH = 37744
@@ -242,5 +262,135 @@ extension AudioDataManager {
 
     downloadWorker.resumeAllActive()
     return false
+  }
+}
+
+// MARK: - Actor System Integration
+
+extension AudioDataManager {
+
+  /// Configures the data manager with ReactiveAudioCoordinator integration
+  /// - Parameter coordinator: The coordinator to integrate with
+  @MainActor func configureWithCoordinator(_ coordinator: ReactiveAudioCoordinator?) {
+    self.coordinator = coordinator
+    setupActorIntegration()
+  }
+
+  /// Sets up reactive bindings with the actor system
+  @MainActor private func setupActorIntegration() {
+    guard let coordinator = coordinator else { return }
+
+    // Bind download progress from DownloadManagerActor
+    coordinator.downloadProgressPublisher
+      .sink { [weak self] progressMap in
+        // Convert new actor-based progress to legacy format
+        for (url, progress) in progressMap {
+          self?.globalDownloadProgressCallback(url.absoluteString, progress.progress)
+        }
+      }
+      .store(in: &cancellables)
+
+    // Setup cellular preference sync
+    Task { @MainActor in
+      await coordinator.setCellularDownloadsAllowed(allowCellular)
+    }
+  }
+
+  /// Downloads audio using the actor system when available
+  @MainActor func downloadWithActorSystem(withRemoteURL url: AudioURL) async throws -> URL {
+    if let coordinator = coordinator {
+      // Use actor system for new downloads
+      let downloadPublisher = coordinator.downloadAudio(from: url, metadata: nil)
+
+      return try await withCheckedThrowingContinuation { continuation in
+        var cancellable: AnyCancellable?
+
+        cancellable = downloadPublisher
+          .sink(
+            receiveCompletion: { completion in
+              if case .failure(let error) = completion {
+                continuation.resume(throwing: error)
+              }
+              cancellable?.cancel()
+            },
+            receiveValue: { progress in
+              if progress.state == .completed, let localURL = progress.localURL {
+                continuation.resume(returning: localURL)
+                cancellable?.cancel()
+              }
+            }
+          )
+      }
+    } else {
+      // Fallback to legacy implementation
+      return try await startDownload(withRemoteURL: url)
+    }
+  }
+
+  /// Cancels download using actor system when available
+  func cancelDownloadWithActorSystem(withRemoteURL url: AudioURL) async {
+    if let coordinator = coordinator {
+      // Use actor system for cancellation
+      _ = try? await coordinator.cancelDownload(for: url).singleOutput()
+    } else {
+      // Fallback to legacy implementation
+      cancelDownload(withRemoteURL: url)
+    }
+  }
+
+  /// Gets local URL using actor system when available
+  func getLocalURLWithActorSystem(withRemoteURL url: AudioURL) async -> URL? {
+    if let coordinator = coordinator {
+      return await coordinator.localURL(for: url)
+    } else {
+      return getPersistedUrl(withRemoteURL: url)
+    }
+  }
+
+  /// Cleans up actor system integration
+  func cleanupActorIntegration() {
+    cancellables.removeAll()
+    coordinator = nil
+  }
+}
+
+// MARK: - Protocol Compatibility Factory
+
+extension AudioDataManager {
+
+  /// Creates a configured AudioDataManager for protocol integration
+  /// - Parameter coordinator: ReactiveAudioCoordinator for actor system access
+  /// - Returns: Configured AudioDataManager instance
+  static func createForProtocolIntegration(
+    coordinator: ReactiveAudioCoordinator?
+  ) -> AudioDataManager {
+    let manager = AudioDataManager()
+    manager.configureWithCoordinator(coordinator)
+    return manager
+  }
+}
+
+// MARK: - Helper Extensions
+
+private extension AnyPublisher {
+  /// Gets a single output value from the publisher
+  func singleOutput() async throws -> Output {
+    return try await withCheckedThrowingContinuation { continuation in
+      var cancellable: AnyCancellable?
+
+      cancellable = first()
+        .sink(
+          receiveCompletion: { completion in
+            if case .failure(let error) = completion {
+              continuation.resume(throwing: error)
+            }
+            cancellable?.cancel()
+          },
+          receiveValue: { value in
+            continuation.resume(returning: value)
+            cancellable?.cancel()
+          }
+        )
+    }
   }
 }

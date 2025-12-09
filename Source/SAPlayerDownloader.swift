@@ -50,7 +50,9 @@ extension SAPlayer {
          - Parameter savedUrl: The url of where the audio was saved locally on the device. Will receive once download has completed.
          */
     public func downloadAudio(withRemoteUrl url: URL) async throws -> URL {
-      SAPlayer.shared.addUrlToMapping(url: url)
+      await MainActor.run {
+        SAPlayer.shared.addUrlToMapping(url: url)
+      }
       return try await self.dataManager.startDownload(withRemoteURL: url)
     }
 

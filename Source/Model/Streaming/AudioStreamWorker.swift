@@ -61,7 +61,7 @@ protocol AudioDataStreamable {
 ///- only one stream at a time
 ///- starting a stream will cancel the previous
 ///- when seeking, assume that previous data is discarded
-class AudioStreamWorker: NSObject, AudioDataStreamable {
+class AudioStreamWorker: NSObject, AudioDataStreamable, @unchecked Sendable {
   private let TIMEOUT = 60.0
 
   fileprivate let progressCallback: (_ id: ID, _ dto: StreamProgress) -> Void

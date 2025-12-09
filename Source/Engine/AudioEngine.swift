@@ -60,7 +60,7 @@ class AudioEngine: AudioEngineProtocol {
   var needle: Needle = -1 {
     didSet {
       if needle >= 0 && oldValue != needle {
-        updates.elapsedTime.send(needle)
+        updates.updateElapsedTime(needle)
       }
     }
   }
@@ -68,7 +68,7 @@ class AudioEngine: AudioEngineProtocol {
   var duration: Duration = -1 {
     didSet {
       if duration >= 0 && oldValue != duration {
-        updates.duration.send(duration)
+        updates.updateDuration(duration)
 //        AudioClockDirector.shared.durationWasChanged(key, duration: duration)
       }
     }
@@ -80,7 +80,7 @@ class AudioEngine: AudioEngineProtocol {
         return
       }
 
-      updates.playingStatus.send(status)
+      updates.updatePlayingStatus(status)
     }
   }
 
@@ -95,7 +95,7 @@ class AudioEngine: AudioEngineProtocol {
       if bufferedSeconds.startingNeedle == 0.0 && bufferedSeconds.durationLoadedByNetwork == 0.0 {
         bufferedSecondsDebouncer = bufferedSeconds
 
-        updates.streamingBuffer.send(bufferedSeconds)
+        updates.updateStreamingBuffer(bufferedSeconds)
         return
       }
 
@@ -114,7 +114,7 @@ class AudioEngine: AudioEngineProtocol {
 
       bufferedSecondsDebouncer = bufferedSeconds
 
-      updates.streamingBuffer.send(bufferedSeconds)
+      updates.updateStreamingBuffer(bufferedSeconds)
     }
   }
 

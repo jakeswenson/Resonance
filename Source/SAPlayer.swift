@@ -42,7 +42,7 @@ public class SAPlayer {
   /**
      Access to the player.
      */
-  public static let shared: SAPlayer = SAPlayer()
+  @MainActor public static let shared: SAPlayer = SAPlayer()
 
   private var presenter: SAPlayerPresenter
   private var player: AudioEngine?

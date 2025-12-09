@@ -51,7 +51,7 @@ enum DownloadWorkerError: Error {
   case duplicate
 }
 
-class AudioDownloadWorker: NSObject, AudioDataDownloadable {
+class AudioDownloadWorker: NSObject, AudioDataDownloadable, @unchecked Sendable {
   private let MAX_CONCURRENT_DOWNLOADS = 3
 
   // Given by the AppDelegate

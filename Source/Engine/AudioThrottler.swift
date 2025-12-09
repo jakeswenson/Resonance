@@ -80,7 +80,7 @@ class AudioThrottler: AudioThrottleable {
 
       self.queue.async { [weak self] in
         self?.networkData.append(dto.data)
-        updates.streamingDownloadProgress.send((url: url, progress: dto.progress))
+        updates.updateStreamingDownloadProgress((url: url, progress: dto.progress))
       }
     }
   }

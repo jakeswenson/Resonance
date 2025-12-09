@@ -35,7 +35,7 @@ import Combine
 import Atomics
 
 /// Start of the streaming chain. Get PCM buffer from lower chain and feed it to
-/// engine
+/// engine - adapted for protocol-based architecture integration
 ///
 /// Main responsibilities:
 /// POLL FOR BUFFER. When we start a stream it takes time for the lower chain to
@@ -55,6 +55,9 @@ import Atomics
 ///
 /// HANDLE PLAYING. Ensure the engine is in the correct state when playing,
 /// pausing, or seeking
+///
+/// PROTOCOL INTEGRATION. Works with ReactiveAudioCoordinator for coordinated
+/// access to actors and provides state updates through AudioUpdates
 class AudioStreamEngine: AudioEngine {
   //Constants
   private let MAX_POLL_BUFFER_COUNT = 300  //Having one buffer in engine at a time is choppy.
@@ -65,6 +68,10 @@ class AudioStreamEngine: AudioEngine {
 
   //From init
   private var converter: AudioConvertable!
+
+  // Protocol integration
+  private weak var coordinator: ReactiveAudioCoordinator?
+  private var audioMetadata: AudioMetadata?
 
   //Fields
   private var currentTimeOffset: TimeInterval = 0
@@ -145,7 +152,7 @@ class AudioStreamEngine: AudioEngine {
 
   private var progressCancelable: AnyCancellable? = nil
 
-  init(withRemoteUrl url: AudioURL, delegate: AudioEngineDelegate?, bitrate: SAPlayerBitrate, updates: AudioUpdates, audioModifiers: [AVAudioNode] = []) {
+  init(withRemoteUrl url: AudioURL, delegate: AudioEngineDelegate?, bitrate: SAPlayerBitrate, updates: AudioUpdates, audioModifiers: [AVAudioNode] = [], coordinator: ReactiveAudioCoordinator? = nil, metadata: AudioMetadata? = nil) {
     Log.info(url)
     super.init(
       url: url,
@@ -153,6 +160,10 @@ class AudioStreamEngine: AudioEngine {
       engineAudioFormat: AudioEngine.defaultEngineAudioFormat,
       updates: updates,
       audioModifiers: audioModifiers)
+
+    // Store protocol integration dependencies
+    self.coordinator = coordinator
+    self.audioMetadata = metadata
 
     PCM_BUFFER_SIZE = bitrate.pcmBufferSize
 
@@ -363,5 +374,53 @@ class AudioStreamEngine: AudioEngine {
 
   private func invalidateHelperDispatchQueue() {
     super.invalidate()
+  }
+}
+
+// MARK: - Protocol Integration
+
+extension AudioStreamEngine {
+
+  /// Creates a stream engine configured for protocol integration
+  /// - Parameters:
+  ///   - url: Remote URL to stream
+  ///   - coordinator: ReactiveAudioCoordinator for actor access
+  ///   - metadata: Audio metadata for protocol compliance
+  ///   - bitrate: Playback bitrate configuration
+  ///   - delegate: Engine delegate for callbacks
+  ///   - audioModifiers: Audio effect nodes
+  /// - Returns: Configured AudioStreamEngine instance
+  static func createForProtocolIntegration(
+    withRemoteUrl url: AudioURL,
+    coordinator: ReactiveAudioCoordinator?,
+    metadata: AudioMetadata?,
+    bitrate: SAPlayerBitrate = .high,
+    delegate: AudioEngineDelegate? = nil,
+    audioModifiers: [AVAudioNode] = []
+  ) -> AudioStreamEngine {
+    return AudioStreamEngine(
+      withRemoteUrl: url,
+      delegate: delegate,
+      bitrate: bitrate,
+      updates: coordinator?.getLegacyAudioUpdates() ?? AudioUpdates(),
+      audioModifiers: audioModifiers,
+      coordinator: coordinator,
+      metadata: metadata
+    )
+  }
+
+  /// Gets the current audio metadata
+  func getCurrentMetadata() -> AudioMetadata? {
+    return audioMetadata
+  }
+
+  /// Updates the audio metadata
+  func updateMetadata(_ metadata: AudioMetadata?) {
+    self.audioMetadata = metadata
+  }
+
+  /// Gets the coordinator reference for actor access
+  func getCoordinator() -> ReactiveAudioCoordinator? {
+    return coordinator
   }
 }
