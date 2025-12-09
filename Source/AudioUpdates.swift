@@ -203,6 +203,118 @@ public struct AudioUpdates: Sendable {
   internal func updateAudioQueue(_ url: URL?) {
     _audioQueue.send(url)
   }
+
+  // MARK: - Modern Protocol Internal Update Methods
+
+  /// Update session state (internal use only)
+  internal func updateSessionState(_ state: AudioSessionState) {
+    _sessionState.send(state)
+  }
+
+  /// Update interruptions (internal use only)
+  internal func updateInterruption(_ interruption: AudioInterruption) {
+    _interruptions.send(interruption)
+  }
+
+  /// Update route changes (internal use only)
+  internal func updateRouteChange(_ routeChange: AudioRouteChange) {
+    _routeChanges.send(routeChange)
+  }
+
+  /// Update session activation (internal use only)
+  internal func updateSessionActivation(_ isActive: Bool) {
+    _sessionActivation.send(isActive)
+  }
+
+  /// Update download progress (internal use only)
+  internal func updateDownloadProgress(_ progressMap: [URL: DownloadProgress]) {
+    _downloadProgress.send(progressMap)
+  }
+
+  /// Update completed downloads (internal use only)
+  internal func updateCompletedDownloads(_ downloads: [DownloadInfo]) {
+    _completedDownloads.send(downloads)
+  }
+
+  /// Update download state changes (internal use only)
+  internal func updateDownloadStateChange(_ progress: DownloadProgress) {
+    _downloadStateChanges.send(progress)
+  }
+
+  /// Update network status (internal use only)
+  internal func updateNetworkStatus(_ status: NetworkStatus) {
+    _networkStatus.send(status)
+  }
+
+  /// Update active effects (internal use only)
+  internal func updateActiveEffects(_ effects: [AudioEffect]) {
+    _activeEffects.send(effects)
+  }
+
+  /// Update effect updates (internal use only)
+  internal func updateEffectUpdate(_ update: EffectUpdate) {
+    _effectUpdates.send(update)
+  }
+
+  /// Update effect chain changes (internal use only)
+  internal func updateEffectChainChange(_ change: EffectChainUpdate) {
+    _effectChainChanges.send(change)
+  }
+
+  /// Update processing latency (internal use only)
+  internal func updateProcessingLatency(_ latency: TimeInterval?) {
+    _processingLatency.send(latency)
+  }
+
+  /// Update queue state (internal use only)
+  internal func updateQueueState(_ state: QueueState) {
+    _queueState.send(state)
+  }
+
+  /// Update queue changes (internal use only)
+  internal func updateQueueChange(_ operation: QueueOperation) {
+    _queueChanges.send(operation)
+  }
+
+  /// Update autoplay events (internal use only)
+  internal func updateAutoplayEvent(_ event: AutoplayEvent) {
+    _autoplayEvents.send(event)
+  }
+
+  /// Update detailed playback state (internal use only)
+  internal func updateDetailedPlaybackState(_ state: DetailedPlaybackState) {
+    _detailedPlaybackState.send(state)
+  }
+
+  /// Update precise position (internal use only)
+  internal func updatePrecisePosition(_ position: TimeInterval) {
+    _precisePosition.send(position)
+  }
+
+  /// Update audio quality (internal use only)
+  internal func updateAudioQuality(_ metrics: AudioQualityMetrics?) {
+    _audioQuality.send(metrics)
+  }
+
+  /// Update buffering events (internal use only)
+  internal func updateBufferingEvent(_ event: BufferingEvent) {
+    _bufferingEvents.send(event)
+  }
+
+  /// Update error events (internal use only)
+  internal func updateErrorEvent(_ error: AudioSystemError) {
+    _errorEvents.send(error)
+  }
+
+  /// Update performance metrics (internal use only)
+  internal func updatePerformanceMetrics(_ metrics: PerformanceMetrics?) {
+    _performanceMetrics.send(metrics)
+  }
+
+  /// Update memory usage (internal use only)
+  internal func updateMemoryUsage(_ usage: MemoryUsage?) {
+    _memoryUsage.send(usage)
+  }
 }
 
 // MARK: - Supporting Types

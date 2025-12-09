@@ -49,7 +49,7 @@ public actor DownloadManagerActor {
     private let maxConcurrentDownloads: Int = 3
 
     /// Download queue for managing concurrency
-    private var downloadQueue: [(url: URL, metadata: AudioMetadata?, completion: CheckedContinuation<DownloadProgress, Error>)] = []
+    private var downloadQueue: [(url: URL, metadata: AudioMetadata?)] = []
 
     /// Currently active download count
     private var activeDownloadCount: Int = 0
@@ -237,19 +237,11 @@ public actor DownloadManagerActor {
         // Check if we can start immediately or need to queue
         if activeDownloadCount < maxConcurrentDownloads {
             executeDownload(url: url, metadata: metadata)
-            promise(.success(initialProgress))
         } else {
-            // Queue the download
-            downloadQueue.append((url: url, metadata: metadata, completion: CheckedContinuation<DownloadProgress, Error>() { result in
-                switch result {
-                case .success(let progress):
-                    promise(.success(progress))
-                case .failure(let error):
-                    promise(.failure(error as? AudioError ?? AudioError.internalError("Unknown error")))
-                }
-            }))
-            promise(.success(initialProgress))
+            // Queue the download for later execution
+            downloadQueue.append((url: url, metadata: metadata))
         }
+        promise(.success(initialProgress))
     }
 
     /// Executes a download task
@@ -276,10 +268,6 @@ public actor DownloadManagerActor {
 
         let nextDownload = downloadQueue.removeFirst()
         executeDownload(url: nextDownload.url, metadata: nextDownload.metadata)
-
-        if let progress = downloadProgressMap[nextDownload.url] {
-            nextDownload.completion.resume(returning: progress)
-        }
     }
 
     /// Cancels a download
