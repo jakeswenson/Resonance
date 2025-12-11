@@ -3,6 +3,11 @@
 
 import Foundation
 
+// MARK: - Type Aliases
+
+/// Type alias for audio progress (percentage 0.0-1.0)
+public typealias AudioProgress = Double
+
 /// Enumeration of possible audio session states
 /// This enum is Sendable for use across concurrency boundaries
 public enum PlaybackState: Sendable, Equatable, Hashable {

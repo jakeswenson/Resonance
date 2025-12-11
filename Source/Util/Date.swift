@@ -45,7 +45,7 @@ extension Date {
   /**
      - Returns: UTC in seconds.
      */
-  static func getUTC() -> UTC {
+  static func getUTC() -> Int {
     return Int(Date().timeIntervalSince1970)
   }
 }
